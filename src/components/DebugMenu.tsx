@@ -27,7 +27,7 @@ export default function DebugMenu({ onClose }: { onClose: () => void }) {
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn-primary" style={{ flex: 1, padding: 8, fontSize: '0.8rem' }} onClick={() => store.addGold(100)}>+100 🟡</button>
           <button className="btn-primary" style={{ flex: 1, padding: 8, fontSize: '0.8rem' }} onClick={() => store.addGold(1000)}>+1k 🟡</button>
-          <button className="btn-primary" style={{ flex: 1, padding: 8, fontSize: '0.8rem' }} onClick={() => store.addGold(10000)}>+10k 🟡</button>
+          <button className="btn-primary" style={{ flex: 1, padding: 8, fontSize: '0.8rem' }} onClick={() => store.addGold(999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999)}>+999... 🟡</button>
         </div>
 
         <div style={{ display: 'flex', gap: 8 }}>
@@ -40,8 +40,8 @@ export default function DebugMenu({ onClose }: { onClose: () => void }) {
           <button className="btn-primary" style={{ flex: 1, padding: 8, fontSize: '0.8rem', background: '#8b5cf6' }} onClick={() => store.advanceStage(10)}>+10 Stages</button>
         </div>
 
-        <button className="btn-primary" style={{ padding: 8, fontSize: '0.8rem', background: '#eab308' }} onClick={() => store.unlockAllShopTiers()}>Unlock All Shop Tiers</button>
-        
+        <button className="btn-primary" style={{ padding: 8, fontSize: '0.8rem', background: '#eab308' }} onClick={() => store.unlockAllLevels()}>Unlock All Levels</button>
+
         <button className="btn-primary" style={{ padding: 8, fontSize: '0.8rem', background: '#ef4444' }} onClick={() => store.killAllEnemies()}>Kill All Enemies</button>
         <button className="btn-primary" style={{ padding: 8, fontSize: '0.8rem', background: '#64748b' }} onClick={() => store.clearBoard()}>Clear Board</button>
         <button className="btn-primary" style={{ padding: 8, fontSize: '0.8rem', background: '#1e293b' }} onClick={() => { store.resetSave(); window.location.reload(); }}>Hard Reset</button>

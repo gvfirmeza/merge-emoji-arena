@@ -2,15 +2,11 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { GameState, Unit, Enemy } from '../types';
 import {
-  BOARD_SIZE, LANES_COUNT, getEnemyMaxHp, getEnemyReward, getShopCost, getShopLevelForStage, ENEMY_EMOJIS, BOSS_EMOJIS, MAX_UNIT_LEVEL
+  BOARD_SIZE, LANES_COUNT, getEnemyMaxHp, getEnemyReward, getShopCost, getShopLevelForStage, getEnemyEmoji, MAX_UNIT_LEVEL
 } from '../utils/constants';
 
 const createEnemy = (stage: number, isBoss: boolean, laneIndex: number): Enemy => {
-  const emojis = isBoss ? BOSS_EMOJIS : ENEMY_EMOJIS;
-  const stageIndex = stage - 1;
-  const emoji = isBoss 
-    ? emojis[Math.floor(stageIndex / 5) % emojis.length]
-    : emojis[stageIndex % emojis.length];
+  const emoji = getEnemyEmoji(stage, isBoss);
 
   const laneMultiplier = 1 + (laneIndex * 0.2); // Each lane is 20% stronger than the previous
   const maxHp = Math.floor(getEnemyMaxHp(stage, isBoss) * laneMultiplier);
@@ -26,7 +22,7 @@ const createEnemy = (stage: number, isBoss: boolean, laneIndex: number): Enemy =
 };
 
 const createInitialEnemies = (stage: number) => {
-  const isBoss = stage % 5 === 0;
+  const isBoss = stage % 10 === 0;
   return Array(LANES_COUNT).fill(null).map((_, i) => createEnemy(stage, isBoss, i));
 };
 
@@ -48,7 +44,7 @@ export interface GameStateActions {
   advanceStage: (stages: number) => void;
   killAllEnemies: () => void;
   clearBoard: () => void;
-  unlockAllShopTiers: () => void;
+  unlockAllLevels: () => void;
 }
 
 export const useGameStore = create<GameState & GameStateActions>()(
@@ -194,7 +190,19 @@ export const useGameStore = create<GameState & GameStateActions>()(
               const autoShopLevel = getShopLevelForStage(nextStage);
               const maxShopLevel = Math.max(shopLevel, autoShopLevel);
               
+              let newBoard = get().board;
+              let newLanes = get().lanes;
+              let highestUnlocked = get().highestUnlockedLevel;
+              if (maxShopLevel > shopLevel) {
+                newBoard = newBoard.map(u => u && u.level < maxShopLevel ? { ...u, level: maxShopLevel } : u);
+                newLanes = newLanes.map(u => u && u.level < maxShopLevel ? { ...u, level: maxShopLevel } : u);
+                highestUnlocked = Math.max(highestUnlocked, maxShopLevel);
+              }
+              
               set({
+                board: newBoard,
+                lanes: newLanes,
+                highestUnlockedLevel: highestUnlocked,
                 enemies: createInitialEnemies(nextStage),
                 gold: gold + enemy.reward,
                 stage: nextStage,
@@ -255,10 +263,24 @@ export const useGameStore = create<GameState & GameStateActions>()(
       advanceStage: (stages) => {
         const nextStage = get().stage + stages;
         const autoShopLevel = getShopLevelForStage(nextStage);
+        const maxShopLevel = Math.max(get().shopLevel, autoShopLevel);
+        
+        let newBoard = get().board;
+        let newLanes = get().lanes;
+        let highestUnlocked = get().highestUnlockedLevel;
+        if (maxShopLevel > get().shopLevel) {
+          newBoard = newBoard.map(u => u && u.level < maxShopLevel ? { ...u, level: maxShopLevel } : u);
+          newLanes = newLanes.map(u => u && u.level < maxShopLevel ? { ...u, level: maxShopLevel } : u);
+          highestUnlocked = Math.max(highestUnlocked, maxShopLevel);
+        }
+
         set({
+          board: newBoard,
+          lanes: newLanes,
+          highestUnlockedLevel: highestUnlocked,
           stage: nextStage,
           enemies: createInitialEnemies(nextStage),
-          shopLevel: Math.max(get().shopLevel, autoShopLevel)
+          shopLevel: maxShopLevel
         });
       },
       killAllEnemies: () => {
@@ -268,11 +290,25 @@ export const useGameStore = create<GameState & GameStateActions>()(
         
         const nextStage = stage + 1;
         const autoShopLevel = getShopLevelForStage(nextStage);
+        const maxShopLevel = Math.max(shopLevel, autoShopLevel);
+        
+        let newBoard = get().board;
+        let newLanes = get().lanes;
+        let highestUnlocked = get().highestUnlockedLevel;
+        if (maxShopLevel > shopLevel) {
+          newBoard = newBoard.map(u => u && u.level < maxShopLevel ? { ...u, level: maxShopLevel } : u);
+          newLanes = newLanes.map(u => u && u.level < maxShopLevel ? { ...u, level: maxShopLevel } : u);
+          highestUnlocked = Math.max(highestUnlocked, maxShopLevel);
+        }
+        
         set({
+          board: newBoard,
+          lanes: newLanes,
+          highestUnlockedLevel: highestUnlocked,
           enemies: createInitialEnemies(nextStage),
           gold: gold + addedGold,
           stage: nextStage,
-          shopLevel: Math.max(shopLevel, autoShopLevel),
+          shopLevel: maxShopLevel,
           stats: {
             ...stats,
             totalEnemiesDefeated: stats.totalEnemiesDefeated + enemies.filter(Boolean).length,
@@ -281,7 +317,7 @@ export const useGameStore = create<GameState & GameStateActions>()(
         });
       },
       clearBoard: () => set({ board: Array(BOARD_SIZE).fill(null) }),
-      unlockAllShopTiers: () => set({ shopLevel: MAX_UNIT_LEVEL })
+      unlockAllLevels: () => set({ shopLevel: MAX_UNIT_LEVEL, highestUnlockedLevel: MAX_UNIT_LEVEL })
     }),
     {
       name: 'emoji-merge-dungeon-save',

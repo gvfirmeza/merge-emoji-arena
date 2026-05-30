@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../store/gameStore';
+import { formatNumber } from '../utils/constants';
 import { Settings, Coins } from 'lucide-react';
 import SettingsModal from './SettingsModal';
 import DebugMenu from './DebugMenu';
@@ -20,10 +21,10 @@ export default function TopBar() {
 
   const showNodes = () => {
     const nodes = [];
-    const base = Math.floor((stage - 1) / 5) * 5;
-    for (let i = 1; i <= 5; i++) {
+    const base = Math.floor((stage - 1) / 10) * 10;
+    for (let i = 1; i <= 10; i++) {
       const nodeStage = base + i;
-      const isBoss = nodeStage % 5 === 0;
+      const isBoss = nodeStage % 10 === 0;
       const isCurrent = nodeStage === stage;
       const isPast = nodeStage < stage;
 
@@ -42,8 +43,8 @@ export default function TopBar() {
           zIndex: isCurrent ? 10 : 1
         }}>
           <div style={{ 
-            width: isBoss ? 52 : 44,
-            height: isBoss ? 52 : 44,
+            width: isBoss ? 44 : 36,
+            height: isBoss ? 44 : 36,
             borderRadius: '50%',
             background: isBoss 
               ? (isPast ? 'var(--blue)' : isCurrent ? 'var(--accent)' : 'var(--bg-dark)')
@@ -74,10 +75,10 @@ export default function TopBar() {
         </div>
       );
       
-      if (i < 5) {
+      if (i < 10) {
         nodes.push(
           <div key={`line-${i}`} style={{
-            height: 6, width: 40, 
+            height: 6, width: 24, 
             backgroundColor: isPast ? 'var(--green)' : 'var(--border-dark)',
             margin: '0 4px', alignSelf: 'center',
             borderRadius: 4,
@@ -119,7 +120,7 @@ export default function TopBar() {
               transition={{ duration: 0.2 }}
               style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'white', textShadow: '0 2px 0 var(--border-dark)' }}
             >
-              {gold}
+              {formatNumber(gold)}
             </motion.span>
           </div>
         </div>

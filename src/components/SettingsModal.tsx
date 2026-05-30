@@ -1,5 +1,6 @@
 import React from 'react';
 import { useGameStore } from '../store/gameStore';
+import { formatNumber } from '../utils/constants';
 import { X, Trophy, Clock, Skull } from 'lucide-react';
 
 export default function SettingsModal({ onClose }: { onClose: () => void }) {
@@ -52,11 +53,11 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontWeight: 'bold' }}>
                 <Trophy size={20} color="var(--gold)" />
-                <span>Highest Stage: {stats.highestStageReached}</span>
+                <span>Highest Stage: {formatNumber(stats.highestStageReached)}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontWeight: 'bold' }}>
                 <Skull size={20} color="var(--accent)" />
-                <span>Enemies Defeated: {stats.totalEnemiesDefeated}</span>
+                <span>Enemies Defeated: {formatNumber(stats.totalEnemiesDefeated)}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontWeight: 'bold' }}>
                 <Clock size={20} color="var(--blue)" />

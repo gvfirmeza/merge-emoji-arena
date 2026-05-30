@@ -4,6 +4,7 @@ import { UNIT_DATA, formatNumber } from '../utils/constants';
 import { AudioSystem } from '../utils/audio';
 import { motion } from 'framer-motion';
 import type { PanInfo } from 'framer-motion';
+import UnitBadge from './UnitBadge';
 
 export default function RightPanel() {
   const store = useGameStore();
@@ -56,10 +57,7 @@ export default function RightPanel() {
         const sourceUnit = store.lanes[sourceIndex];
         const targetUnit = store.lanes[targetIndex];
         
-        // Cannot swap into an empty dead lane
-        if (!store.enemies[targetIndex] && !targetUnit) {
-          return;
-        }
+
 
         if (sourceUnit && targetUnit && sourceUnit.level === targetUnit.level && sourceUnit.level < 12) {
           AudioSystem.playSound('merge', store.settings.sfxVolume);
@@ -120,7 +118,7 @@ export default function RightPanel() {
           return (
             <div key={index} style={{
               flex: 1,
-              maxHeight: 140,
+              maxHeight: 160,
               background: 'var(--bg-panel-light)',
               borderRadius: 32,
               border: 'var(--border-width) solid var(--border-dark)',
@@ -166,6 +164,7 @@ export default function RightPanel() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       cursor: 'grab',
+                      position: 'relative',
                       zIndex: activeDragIndex === index ? 100 : 10,
                       touchAction: 'none'
                     }}
@@ -180,6 +179,7 @@ export default function RightPanel() {
                       }}>
                         {formatNumber(UNIT_DATA[unit.level]?.dps || 0)} <span style={{fontSize: '0.9rem'}}>⚔️</span>
                       </div>
+                      <UnitBadge level={unit.level} />
                       <span className="emoji-lg" style={{ fontSize: '3.5rem' }}>
                         {UNIT_DATA[unit.level]?.emoji}
                       </span>

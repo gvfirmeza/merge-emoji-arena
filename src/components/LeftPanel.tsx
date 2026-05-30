@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGameStore } from '../store/gameStore';
-import { UNIT_DATA, MAX_UNIT_LEVEL } from '../utils/constants';
+import { UNIT_DATA, MAX_UNIT_LEVEL, formatNumber } from '../utils/constants';
 
 export default function LeftPanel() {
   const { highestUnlockedLevel, shopLevel } = useGameStore();
@@ -66,7 +66,7 @@ export default function LeftPanel() {
                   fontSize: '1rem', 
                   fontWeight: '800' 
                 }}>
-                  {isUnlocked ? `${unit?.dps || 0} DPS` : '??? DPS'}
+                  {isUnlocked ? `${formatNumber(unit?.dps || 0)} DPS` : '??? DPS'}
                 </div>
               </div>
 

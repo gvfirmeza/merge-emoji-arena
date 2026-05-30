@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { getShopCost, UNIT_DATA, BOARD_SIZE } from '../utils/constants';
+import { getShopCost, UNIT_DATA, BOARD_SIZE, formatNumber } from '../utils/constants';
 import { AudioSystem } from '../utils/audio';
 import { motion } from 'framer-motion';
 import type { PanInfo } from 'framer-motion';
+import UnitBadge from './UnitBadge';
 
 export default function MergeBoard() {
   const store = useGameStore();
@@ -48,7 +49,7 @@ export default function MergeBoard() {
     if (targetLaneEl) {
       const targetLaneIndex = parseInt(targetLaneEl.getAttribute('data-lane-index') || '-1');
       // Block adding unit to dead enemy's lane
-      if (targetLaneIndex !== -1 && store.enemies[targetLaneIndex]) {
+      if (targetLaneIndex !== -1) {
         const sourceUnit = store.board[sourceIndex];
         const targetUnit = store.lanes[targetLaneIndex];
         
@@ -127,11 +128,13 @@ export default function MergeBoard() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       cursor: 'grab',
+                      position: 'relative',
                       zIndex: activeDragIndex === index ? 100 : 10,
                       userSelect: 'none',
                       touchAction: 'none'
                     }}
                   >
+                    <UnitBadge level={unit.level} />
                     <span className="emoji-lg">{UNIT_DATA[unit.level]?.emoji}</span>
                   </motion.div>
                 )}
@@ -171,7 +174,7 @@ export default function MergeBoard() {
             <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Buy Lv {store.shopLevel} Unit</span>
             <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '1.5rem', marginTop: 4 }}>
               <span className="emoji-md" style={{ fontSize: '1.2rem'}}>{UNIT_DATA[store.shopLevel]?.emoji}</span>
-              - {cost} Gold
+              - {formatNumber(cost)} Gold
             </span>
           </div>
           
