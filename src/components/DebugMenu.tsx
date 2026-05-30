@@ -1,4 +1,3 @@
-import React from 'react';
 import { useGameStore } from '../store/gameStore';
 import { X } from 'lucide-react';
 import { MAX_UNIT_LEVEL } from '../utils/constants';
