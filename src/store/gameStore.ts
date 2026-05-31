@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { GameState, Unit, Enemy } from '../types';
+import type { GameState, Enemy } from '../types';
 import {
   BOARD_SIZE, LANES_COUNT, getEnemyMaxHp, getEnemyReward, getShopCost, getShopLevelForStage, getEnemyEmoji, MAX_UNIT_LEVEL
 } from '../utils/constants';
@@ -26,6 +26,26 @@ const createInitialEnemies = (stage: number) => {
   return Array(LANES_COUNT).fill(null).map((_, i) => createEnemy(stage, isBoss, i));
 };
 
+const updateBestiary = (bestiary: Record<string, import('../types').BestiaryEntry>, enemies: (Enemy | null)[], stage: number) => {
+  const newBestiary = { ...bestiary };
+  enemies.forEach(e => {
+    if (e) {
+      if (!newBestiary[e.emoji]) {
+        newBestiary[e.emoji] = {
+          emoji: e.emoji,
+          isBoss: e.isBoss,
+          firstSeenStage: stage,
+          highestHp: e.maxHp,
+          defeatedCount: 0
+        };
+      } else if (e.maxHp > newBestiary[e.emoji].highestHp) {
+        newBestiary[e.emoji] = { ...newBestiary[e.emoji], highestHp: e.maxHp };
+      }
+    }
+  });
+  return newBestiary;
+};
+
 export interface GameStateActions {
   buyUnit: () => void;
   moveBoardUnit: (fromIndex: number, toIndex: number) => void;
@@ -45,6 +65,10 @@ export interface GameStateActions {
   killAllEnemies: () => void;
   clearBoard: () => void;
   unlockAllLevels: () => void;
+  
+  activateDoubleGold: () => void;
+  activateShopBoost: () => void;
+  claimInstantGold: () => void;
 }
 
 export const useGameStore = create<GameState & GameStateActions>()(
@@ -57,6 +81,8 @@ export const useGameStore = create<GameState & GameStateActions>()(
       board: Array(BOARD_SIZE).fill(null),
       lanes: Array(LANES_COUNT).fill(null),
       enemies: createInitialEnemies(1),
+      bestiary: updateBestiary({}, createInitialEnemies(1), 1),
+      boosts: { doubleGoldUntil: null, shopBoostUntil: null },
       settings: {
         sfxVolume: 1,
         musicVolume: 0.5,
@@ -69,13 +95,15 @@ export const useGameStore = create<GameState & GameStateActions>()(
       },
 
       buyUnit: () => {
-        const { gold, shopLevel, board } = get();
-        const cost = getShopCost(shopLevel);
-        const emptyIndex = board.findIndex(u => u === null);
+        const { gold, shopLevel, board, boosts } = get();
+        const isShopBoostActive = boosts.shopBoostUntil && Date.now() < boosts.shopBoostUntil;
+        const effectiveShopLevel = isShopBoostActive ? Math.min(MAX_UNIT_LEVEL, shopLevel + 1) : shopLevel;
+        const cost = getShopCost(effectiveShopLevel);
+        const emptyIndex = board.findIndex((u: any) => u === null);
         
         if (gold >= cost && emptyIndex !== -1) {
           const newBoard = [...board];
-          newBoard[emptyIndex] = { id: crypto.randomUUID(), level: shopLevel };
+          newBoard[emptyIndex] = { id: crypto.randomUUID(), level: effectiveShopLevel };
           set({ gold: gold - cost, board: newBoard });
         }
       },
@@ -172,7 +200,7 @@ export const useGameStore = create<GameState & GameStateActions>()(
       },
 
       dealDamageToEnemy: (laneIndex, damage) => {
-        const { enemies, gold, stage, stats, shopLevel } = get();
+        const { enemies, gold, stage, stats, shopLevel, boosts, bestiary } = get();
         const enemy = enemies[laneIndex];
         if (enemy && enemy.hp > 0) {
           const newHp = Math.max(0, enemy.hp - damage);
@@ -181,6 +209,14 @@ export const useGameStore = create<GameState & GameStateActions>()(
           if (newHp === 0) {
             newEnemies[laneIndex] = null;
             const newTotalDefeated = stats.totalEnemiesDefeated + 1;
+            
+            const isDoubleGold = boosts.doubleGoldUntil && Date.now() < boosts.doubleGoldUntil;
+            const reward = isDoubleGold ? enemy.reward * 2 : enemy.reward;
+
+            const newBestiary = { ...bestiary };
+            if (newBestiary[enemy.emoji]) {
+              newBestiary[enemy.emoji] = { ...newBestiary[enemy.emoji], defeatedCount: newBestiary[enemy.emoji].defeatedCount + 1 };
+            }
             
             // Check if all enemies in stage are dead
             const allDead = newEnemies.every(e => e === null);
@@ -194,17 +230,19 @@ export const useGameStore = create<GameState & GameStateActions>()(
               let newLanes = get().lanes;
               let highestUnlocked = get().highestUnlockedLevel;
               if (maxShopLevel > shopLevel) {
-                newBoard = newBoard.map(u => u && u.level < maxShopLevel ? { ...u, level: maxShopLevel } : u);
-                newLanes = newLanes.map(u => u && u.level < maxShopLevel ? { ...u, level: maxShopLevel } : u);
+                newBoard = newBoard.map((u: any) => u && u.level < maxShopLevel ? { ...u, level: maxShopLevel } : u);
+                newLanes = newLanes.map((u: any) => u && u.level < maxShopLevel ? { ...u, level: maxShopLevel } : u);
                 highestUnlocked = Math.max(highestUnlocked, maxShopLevel);
               }
               
+              const freshEnemies = createInitialEnemies(nextStage);
               set({
                 board: newBoard,
                 lanes: newLanes,
                 highestUnlockedLevel: highestUnlocked,
-                enemies: createInitialEnemies(nextStage),
-                gold: gold + enemy.reward,
+                enemies: freshEnemies,
+                bestiary: updateBestiary(newBestiary, freshEnemies, nextStage),
+                gold: gold + reward,
                 stage: nextStage,
                 shopLevel: maxShopLevel,
                 stats: {
@@ -216,7 +254,8 @@ export const useGameStore = create<GameState & GameStateActions>()(
             } else {
               set({
                 enemies: newEnemies,
-                gold: gold + enemy.reward,
+                bestiary: newBestiary,
+                gold: gold + reward,
                 stats: { ...stats, totalEnemiesDefeated: newTotalDefeated }
               });
             }
@@ -240,6 +279,8 @@ export const useGameStore = create<GameState & GameStateActions>()(
           board: Array(BOARD_SIZE).fill(null),
           lanes: Array(LANES_COUNT).fill(null),
           enemies: createInitialEnemies(1),
+          bestiary: updateBestiary({}, createInitialEnemies(1), 1),
+          boosts: { doubleGoldUntil: null, shopBoostUntil: null },
           stats: { totalEnemiesDefeated: 0, highestStageReached: 1, timePlayed: 0 }
         });
       },
@@ -253,7 +294,7 @@ export const useGameStore = create<GameState & GameStateActions>()(
       addGold: (amount) => set({ gold: get().gold + amount }),
       spawnUnit: (level) => {
         const { board } = get();
-        const emptyIndex = board.findIndex(u => u === null);
+        const emptyIndex = board.findIndex((u: any) => u === null);
         if (emptyIndex !== -1) {
           const newBoard = [...board];
           newBoard[emptyIndex] = { id: crypto.randomUUID(), level };
@@ -269,24 +310,26 @@ export const useGameStore = create<GameState & GameStateActions>()(
         let newLanes = get().lanes;
         let highestUnlocked = get().highestUnlockedLevel;
         if (maxShopLevel > get().shopLevel) {
-          newBoard = newBoard.map(u => u && u.level < maxShopLevel ? { ...u, level: maxShopLevel } : u);
-          newLanes = newLanes.map(u => u && u.level < maxShopLevel ? { ...u, level: maxShopLevel } : u);
+          newBoard = newBoard.map((u: any) => u && u.level < maxShopLevel ? { ...u, level: maxShopLevel } : u);
+          newLanes = newLanes.map((u: any) => u && u.level < maxShopLevel ? { ...u, level: maxShopLevel } : u);
           highestUnlocked = Math.max(highestUnlocked, maxShopLevel);
         }
 
+        const freshEnemies = createInitialEnemies(nextStage);
         set({
           board: newBoard,
           lanes: newLanes,
           highestUnlockedLevel: highestUnlocked,
           stage: nextStage,
-          enemies: createInitialEnemies(nextStage),
+          enemies: freshEnemies,
+          bestiary: updateBestiary(get().bestiary, freshEnemies, nextStage),
           shopLevel: maxShopLevel
         });
       },
       killAllEnemies: () => {
         const { enemies, gold, stage, stats, shopLevel } = get();
         let addedGold = 0;
-        enemies.forEach(e => { if (e) addedGold += e.reward; });
+        enemies.forEach((e: any) => { if (e) addedGold += e.reward; });
         
         const nextStage = stage + 1;
         const autoShopLevel = getShopLevelForStage(nextStage);
@@ -296,16 +339,18 @@ export const useGameStore = create<GameState & GameStateActions>()(
         let newLanes = get().lanes;
         let highestUnlocked = get().highestUnlockedLevel;
         if (maxShopLevel > shopLevel) {
-          newBoard = newBoard.map(u => u && u.level < maxShopLevel ? { ...u, level: maxShopLevel } : u);
-          newLanes = newLanes.map(u => u && u.level < maxShopLevel ? { ...u, level: maxShopLevel } : u);
+          newBoard = newBoard.map((u: any) => u && u.level < maxShopLevel ? { ...u, level: maxShopLevel } : u);
+          newLanes = newLanes.map((u: any) => u && u.level < maxShopLevel ? { ...u, level: maxShopLevel } : u);
           highestUnlocked = Math.max(highestUnlocked, maxShopLevel);
         }
         
+        const freshEnemies = createInitialEnemies(nextStage);
         set({
           board: newBoard,
           lanes: newLanes,
           highestUnlockedLevel: highestUnlocked,
-          enemies: createInitialEnemies(nextStage),
+          enemies: freshEnemies,
+          bestiary: updateBestiary(get().bestiary, freshEnemies, nextStage),
           gold: gold + addedGold,
           stage: nextStage,
           shopLevel: maxShopLevel,
@@ -317,7 +362,23 @@ export const useGameStore = create<GameState & GameStateActions>()(
         });
       },
       clearBoard: () => set({ board: Array(BOARD_SIZE).fill(null) }),
-      unlockAllLevels: () => set({ shopLevel: MAX_UNIT_LEVEL, highestUnlockedLevel: MAX_UNIT_LEVEL })
+      unlockAllLevels: () => set({ shopLevel: MAX_UNIT_LEVEL, highestUnlockedLevel: MAX_UNIT_LEVEL }),
+
+      activateDoubleGold: () => {
+        const { boosts } = get();
+        set({ boosts: { ...boosts, doubleGoldUntil: Date.now() + 5 * 60 * 1000 } });
+      },
+      activateShopBoost: () => {
+        const { boosts } = get();
+        set({ boosts: { ...boosts, shopBoostUntil: Date.now() + 5 * 60 * 1000 } });
+      },
+      claimInstantGold: () => {
+        const { shopLevel, gold, boosts } = get();
+        const isShopBoostActive = boosts.shopBoostUntil && Date.now() < boosts.shopBoostUntil;
+        const effectiveShopLevel = isShopBoostActive ? Math.min(MAX_UNIT_LEVEL, shopLevel + 1) : shopLevel;
+        const currentCost = getShopCost(effectiveShopLevel);
+        set({ gold: gold + (currentCost * 20) });
+      }
     }),
     {
       name: 'emoji-merge-dungeon-save',
@@ -327,6 +388,8 @@ export const useGameStore = create<GameState & GameStateActions>()(
           persistedState.board = persistedState.board.slice(0, BOARD_SIZE);
           while (persistedState.board.length < BOARD_SIZE) persistedState.board.push(null);
         }
+        if (persistedState && !persistedState.bestiary) persistedState.bestiary = {};
+        if (persistedState && !persistedState.boosts) persistedState.boosts = { doubleGoldUntil: null, shopBoostUntil: null };
         return { ...currentState, ...persistedState };
       }
     }

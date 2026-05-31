@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { UNIT_DATA, formatNumber } from '../utils/constants';
 import { AudioSystem } from '../utils/audio';
@@ -46,7 +46,7 @@ export default function RightPanel() {
     return () => clearInterval(attackInterval);
   }, [store.lanes, store.enemies, store.dealDamageToEnemy, store.settings.sfxVolume]);
 
-  const handleDragEnd = (e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo, sourceIndex: number) => {
+  const handleDragEnd = (_e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo, sourceIndex: number) => {
     setActiveDragIndex(null);
     const elements = document.elementsFromPoint(info.point.x, info.point.y);
     

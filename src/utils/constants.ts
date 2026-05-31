@@ -94,6 +94,19 @@ export const BOSS_EMOJIS = [
   '🦖'
 ];
 
+export const ENEMY_NAMES: Record<string, string> = {
+  '🐌': 'Snail', '🐛': 'Caterpillar', '🐜': 'Ant', '🐞': 'Ladybug', '🪲': 'Beetle',
+  '🦗': 'Cricket', '🪳': 'Roach', '🐝': 'Bee', '🦟': 'Mosquito', '🪰': 'Fly',
+  '🐍': 'Snake', '🦎': 'Lizard', '🐢': 'Turtle', '🐸': 'Frog', '🦀': 'Crab',
+  '🦑': 'Squid', '🐙': 'Octopus', '🦂': 'Scorpion', '🦅': 'Eagle', '🦝': 'Raccoon',
+  '🦨': 'Skunk', '🐗': 'Boar', '🐻': 'Bear', '🦬': 'Bison', '🐘': 'Elephant',
+  '🦣': 'Mammoth', '🦒': 'Giraffe', '🦘': 'Kangaroo', '🦥': 'Sloth', '🦏': 'Rhino',
+  '🦖': 'T-Rex', '🐉': 'Dragon', '👹': 'Demon Chief', '👺': 'Tengu Overlord',
+  '😈': 'Imp', '👿': 'Fallen Angel', '👻': 'Phantom', '💀': 'Skeleton King',
+  '☠️': 'Death Bringer', '🤡': 'Mad Jester', '👾': 'Alien Invader', '🤖': 'War Machine',
+  '🌪️': 'Cyclone', '🌋': 'Magma Core', '☄️': 'Meteor Strike'
+};
+
 export const BOARD_SIZE = 9;
 export const LANES_COUNT = 3;
 

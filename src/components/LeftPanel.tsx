@@ -1,4 +1,3 @@
-import React from 'react';
 import { useGameStore } from '../store/gameStore';
 import { UNIT_DATA, MAX_UNIT_LEVEL, formatNumber } from '../utils/constants';
 

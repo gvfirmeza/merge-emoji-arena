@@ -1,23 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { formatNumber } from '../utils/constants';
-import { Settings, Coins } from 'lucide-react';
+import { Settings, Coins, Book, Zap } from 'lucide-react';
 import SettingsModal from './SettingsModal';
 import DebugMenu from './DebugMenu';
+import BestiaryModal from './BestiaryModal';
+import RewardsModal from './RewardsModal';
 import { motion } from 'framer-motion';
 
 export default function TopBar() {
-  const { stage, gold } = useGameStore();
+  const { stage, gold, boosts } = useGameStore();
   const [showSettings, setShowSettings] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
+  const [showBestiary, setShowBestiary] = useState(false);
+  const [showRewards, setShowRewards] = useState(false);
+  const [now, setNow] = useState(Date.now());
 
   const [punchGold, setPunchGold] = useState(false);
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     setPunchGold(true);
     const t = setTimeout(() => setPunchGold(false), 200);
     return () => clearTimeout(t);
   }, [gold]);
+
+  const isDoubleGoldActive = boosts.doubleGoldUntil ? now < boosts.doubleGoldUntil : false;
+  const isShopBoostActive = boosts.shopBoostUntil ? now < boosts.shopBoostUntil : false;
+
+  const formatTime = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
 
   const showNodes = () => {
     const nodes = [];
@@ -102,7 +121,7 @@ export default function TopBar() {
         
         <div 
           onDoubleClick={() => setShowDebug(p => !p)}
-          style={{ display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer', userSelect: 'none' }}
+          style={{ display: 'flex', flexDirection: 'column', gap: 8, cursor: 'pointer', userSelect: 'none' }}
         >
           <div style={{
             background: 'var(--bg-dark)',
@@ -123,6 +142,18 @@ export default function TopBar() {
               {formatNumber(gold)}
             </motion.span>
           </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {isDoubleGoldActive && (
+              <div style={{ background: 'var(--gold)', color: 'white', padding: '2px 8px', borderRadius: 8, fontSize: '0.8rem', fontWeight: 'bold' }}>
+                2x Gold: {formatTime(Math.ceil((boosts.doubleGoldUntil! - now) / 1000))}
+              </div>
+            )}
+            {isShopBoostActive && (
+              <div style={{ background: '#a855f7', color: 'white', padding: '2px 8px', borderRadius: 8, fontSize: '0.8rem', fontWeight: 'bold' }}>
+                Boost: {formatTime(Math.ceil((boosts.shopBoostUntil! - now) / 1000))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
@@ -140,7 +171,44 @@ export default function TopBar() {
               alignItems: 'center',
               justifyContent: 'center',
               border: '3px solid var(--border-dark)',
-              boxShadow: '0 4px 0 var(--border-dark)'
+              boxShadow: '0 4px 0 var(--border-dark)',
+              cursor: 'pointer'
+            }}
+            onClick={() => setShowBestiary(true)}
+          >
+            <Book size={28} />
+          </button>
+          
+          <button 
+            style={{ 
+              background: 'var(--bg-panel-light)', 
+              color: 'var(--text)',
+              padding: 12,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '3px solid var(--border-dark)',
+              boxShadow: '0 4px 0 var(--border-dark)',
+              cursor: 'pointer'
+            }}
+            onClick={() => setShowRewards(true)}
+          >
+            <Zap size={28} color="var(--gold)" fill="var(--gold)" />
+          </button>
+
+          <button 
+            style={{ 
+              background: 'var(--bg-panel-light)', 
+              color: 'var(--text)',
+              padding: 12,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '3px solid var(--border-dark)',
+              boxShadow: '0 4px 0 var(--border-dark)',
+              cursor: 'pointer'
             }}
             onClick={() => setShowSettings(true)}
           >
@@ -151,6 +219,8 @@ export default function TopBar() {
       
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {showDebug && <DebugMenu onClose={() => setShowDebug(false)} />}
+      {showBestiary && <BestiaryModal onClose={() => setShowBestiary(false)} />}
+      {showRewards && <RewardsModal onClose={() => setShowRewards(false)} />}
     </>
   );
 }

@@ -12,6 +12,19 @@ export interface Enemy {
   reward: number;
 }
 
+export interface BestiaryEntry {
+  emoji: string;
+  isBoss: boolean;
+  firstSeenStage: number;
+  highestHp: number;
+  defeatedCount: number;
+}
+
+export interface Boosts {
+  doubleGoldUntil: number | null;
+  shopBoostUntil: number | null;
+}
+
 export interface GameState {
   stage: number;
   gold: number;
@@ -30,6 +43,8 @@ export interface GameState {
     highestStageReached: number;
     timePlayed: number; // in seconds
   };
+  bestiary: Record<string, BestiaryEntry>;
+  boosts: Boosts;
   
   // Actions
   buyUnit: () => void;

@@ -1,6 +1,5 @@
 import { useGameStore } from '../store/gameStore';
 import { X } from 'lucide-react';
-import { MAX_UNIT_LEVEL } from '../utils/constants';
 import { motion } from 'framer-motion';
 
 export default function DebugMenu({ onClose }: { onClose: () => void }) {

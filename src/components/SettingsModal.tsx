@@ -1,4 +1,3 @@
-import React from 'react';
 import { useGameStore } from '../store/gameStore';
 import { formatNumber } from '../utils/constants';
 import { X, Trophy, Clock, Skull } from 'lucide-react';
