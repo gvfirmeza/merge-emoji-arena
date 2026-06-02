@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { formatNumber } from '../utils/constants';
-import { Settings, Coins, Book, Zap } from 'lucide-react';
+import { Settings, Coins, Book } from 'lucide-react';
 import SettingsModal from './SettingsModal';
 import DebugMenu from './DebugMenu';
 import BestiaryModal from './BestiaryModal';
-import RewardsModal from './RewardsModal';
 import { motion } from 'framer-motion';
 
 export default function TopBar() {
@@ -13,7 +12,6 @@ export default function TopBar() {
   const [showSettings, setShowSettings] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
   const [showBestiary, setShowBestiary] = useState(false);
-  const [showRewards, setShowRewards] = useState(false);
   const [now, setNow] = useState(Date.now());
 
   const [punchGold, setPunchGold] = useState(false);
@@ -111,13 +109,7 @@ export default function TopBar() {
 
   return (
     <>
-      <div className="panel" style={{ 
-        gridArea: 'top', 
-        flexDirection: 'row', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        padding: '0 32px' 
-      }}>
+      <div className="panel top-bar-panel" style={{ gridArea: 'top' }}>
         
         <div 
           onDoubleClick={() => setShowDebug(p => !p)}
@@ -156,7 +148,7 @@ export default function TopBar() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+        <div className="top-bar-nodes" style={{ display: 'flex', alignItems: 'center', height: '100%', overflowX: 'auto', padding: '0 16px', maxWidth: '100%' }}>
           {showNodes()}
         </div>
 
@@ -192,24 +184,6 @@ export default function TopBar() {
               boxShadow: '0 4px 0 var(--border-dark)',
               cursor: 'pointer'
             }}
-            onClick={() => setShowRewards(true)}
-          >
-            <Zap size={28} color="var(--gold)" fill="var(--gold)" />
-          </button>
-
-          <button 
-            style={{ 
-              background: 'var(--bg-panel-light)', 
-              color: 'var(--text)',
-              padding: 12,
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '3px solid var(--border-dark)',
-              boxShadow: '0 4px 0 var(--border-dark)',
-              cursor: 'pointer'
-            }}
             onClick={() => setShowSettings(true)}
           >
             <Settings size={28} />
@@ -220,7 +194,6 @@ export default function TopBar() {
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {showDebug && <DebugMenu onClose={() => setShowDebug(false)} />}
       {showBestiary && <BestiaryModal onClose={() => setShowBestiary(false)} />}
-      {showRewards && <RewardsModal onClose={() => setShowRewards(false)} />}
     </>
   );
 }

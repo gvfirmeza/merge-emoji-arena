@@ -24,9 +24,9 @@ export default function SettingsModal({ onClose }: { onClose: () => void }) {
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
       backgroundColor: 'rgba(0,0,0,0.8)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 100, backdropFilter: 'blur(5px)'
+      zIndex: 1000, backdropFilter: 'blur(5px)'
     }}>
-      <div className="panel animate-pop" style={{ width: 400, padding: 32, gap: 24 }}>
+      <div className="panel animate-pop" style={{ width: '90%', maxWidth: 400, maxHeight: '90vh', overflowY: 'auto', padding: 32, gap: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 style={{ margin: 0, color: 'var(--text)', fontSize: '1.5rem' }}>Settings & Stats</h2>
           <button onClick={onClose} style={{ background: 'transparent', color: 'var(--text-dim)', padding: 8 }}>

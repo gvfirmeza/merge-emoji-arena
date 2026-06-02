@@ -24,7 +24,7 @@ export default function BestiaryModal({ onClose }: { onClose: () => void }) {
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 1000, backdropFilter: 'blur(5px)'
     }}>
-      <div className="panel animate-pop" style={{ width: 600, height: '80vh', display: 'flex', flexDirection: 'column', padding: 24, gap: 16 }}>
+      <div className="panel animate-pop" style={{ width: '90%', maxWidth: 600, height: '80vh', maxHeight: 800, display: 'flex', flexDirection: 'column', padding: 24, gap: 16 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <Book color="var(--accent)" size={28} />

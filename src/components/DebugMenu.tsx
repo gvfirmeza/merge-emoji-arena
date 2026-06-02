@@ -7,7 +7,7 @@ export default function DebugMenu({ onClose }: { onClose: () => void }) {
 
   return (
     <motion.div drag style={{
-      position: 'fixed', top: 80, right: 340, width: 280,
+      position: 'fixed', top: 80, right: 16, width: 280, maxWidth: '90vw',
       background: 'var(--bg-panel-light)',
       borderRadius: 'var(--radius-lg)',
       padding: 20, zIndex: 1000,
