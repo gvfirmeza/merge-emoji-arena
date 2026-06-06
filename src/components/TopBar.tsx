@@ -113,7 +113,7 @@ export default function TopBar() {
         
         <div 
           onDoubleClick={() => setShowDebug(p => !p)}
-          style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer', userSelect: 'none', position: 'relative' }}
+          style={{ display: 'flex', flexDirection: 'column', gap: 8, cursor: 'pointer', userSelect: 'none' }}
         >
           <div style={{
             background: 'var(--bg-dark)',
@@ -134,21 +134,21 @@ export default function TopBar() {
               {formatNumber(gold)}
             </motion.span>
           </div>
-          <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, display: 'flex', gap: 4, whiteSpace: 'nowrap' }}>
+          <div style={{ display: 'flex', gap: 8 }}>
             {isDoubleGoldActive && (
               <div style={{ background: 'var(--gold)', color: 'white', padding: '2px 8px', borderRadius: 8, fontSize: '0.8rem', fontWeight: 'bold' }}>
                 2x Gold: {formatTime(Math.ceil((boosts.doubleGoldUntil! - now) / 1000))}
               </div>
             )}
             {isShopBoostActive && (
-              <div style={{ background: 'var(--accent)', color: 'white', padding: '2px 8px', borderRadius: 8, fontSize: '0.8rem', fontWeight: 'bold' }}>
+              <div style={{ background: '#a855f7', color: 'white', padding: '2px 8px', borderRadius: 8, fontSize: '0.8rem', fontWeight: 'bold' }}>
                 Boost: {formatTime(Math.ceil((boosts.shopBoostUntil! - now) / 1000))}
               </div>
             )}
           </div>
         </div>
 
-        <div className="top-bar-nodes" style={{ display: 'flex', alignItems: 'center', height: '100%', overflow: 'visible', padding: '0 16px', maxWidth: '100%' }}>
+        <div className="top-bar-nodes" style={{ display: 'flex', alignItems: 'center', height: '100%', overflowX: 'auto', padding: '0 16px', maxWidth: '100%' }}>
           {showNodes()}
         </div>
 

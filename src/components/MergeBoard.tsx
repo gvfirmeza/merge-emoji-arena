@@ -76,16 +76,14 @@ export default function MergeBoard() {
     <div className="panel" style={{ gridArea: 'center', position: 'relative', zIndex: activeDragIndex !== null ? 100 : 1 }}>
       <div className="panel-header" style={{ textAlign: 'center' }}>Merge Board</div>
       
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, minHeight: 0 }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
           gridTemplateRows: 'repeat(3, 1fr)',
-          gap: 12,
+          gap: 16,
           width: '100%',
-          height: '100%',
-          maxHeight: 400,
-          maxWidth: 400,
+          maxWidth: 450,
           aspectRatio: '1/1',
           background: 'rgba(0,0,0,0.2)',
           padding: 20,
@@ -164,12 +162,12 @@ export default function MergeBoard() {
           style={{
             width: '100%',
             maxWidth: 400,
-            height: 64,
+            height: 80,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '0 24px',
-            borderRadius: 32
+            borderRadius: 40
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useGameStore } from './store/gameStore';
 import TopBar from './components/TopBar';
 import LeftPanel from './components/LeftPanel';
@@ -8,35 +8,35 @@ import RewardOfferPopup, { type RewardType } from './components/RewardOfferPopup
 import PortraitOverlay from './components/PortraitOverlay';
 import { AudioSystem } from './utils/audio';
 
-function App() {
-  const incrementTimePlayed = useGameStore(state => state.incrementTimePlayed);
-  const [offer, setOffer] = useState<RewardType | null>(null);
-
+function useGameScale() {
   const [scale, setScale] = useState(1);
   const [isPortrait, setIsPortrait] = useState(false);
-  const [debugDimensions, setDebugDimensions] = useState({ w: 0, h: 0 });
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const handleResize = () => {
-      const GAME_WIDTH = 1280;
-      const GAME_HEIGHT = 720;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      setIsPortrait(h > w);
       
-      const ww = window.innerWidth;
-      const wh = window.innerHeight;
+      // Calculate scale to ensure BOTH 1200px width and 850px height fit perfectly
+      const scaleX = w < 1200 ? w / 1200 : 1;
+      const scaleY = h < 850 ? h / 850 : 1;
       
-      setIsPortrait(wh > ww);
-      setDebugDimensions({ w: ww, h: wh });
-      
-      const SAFE_PADDING_W = 64;
-      const SAFE_PADDING_H = 64; // Moderate margin on top/bottom (32px each)
-      const scaleFactor = Math.min((ww - SAFE_PADDING_W) / GAME_WIDTH, (wh - SAFE_PADDING_H) / GAME_HEIGHT);
-      setScale(scaleFactor);
+      setScale(Math.min(scaleX, scaleY));
     };
 
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  return { scale, isPortrait };
+}
+
+function App() {
+  const incrementTimePlayed = useGameStore(state => state.incrementTimePlayed);
+  const [offer, setOffer] = useState<RewardType | null>(null);
+  const { scale, isPortrait } = useGameScale();
 
   useEffect(() => {
     const initAudio = () => { 
@@ -56,7 +56,7 @@ function App() {
         const rewards: RewardType[] = ['2x_gold', 'instant_gold', 'shop_boost'];
         return rewards[Math.floor(Math.random() * rewards.length)];
       });
-    }, 3000000); // change here to the rewards appear again
+    }, 30000);
 
     return () => {
       clearInterval(timer);
@@ -68,33 +68,29 @@ function App() {
     return <PortraitOverlay />;
   }
 
-  const GAME_WIDTH = 1280;
-  const GAME_HEIGHT = 720;
-  const scaledWidth = GAME_WIDTH * scale;
-  const scaledHeight = GAME_HEIGHT * scale;
-  const marginH = (debugDimensions.w - scaledWidth) / 2;
-  const marginV = (debugDimensions.h - scaledHeight) / 2;
-
   return (
-    <>
-      <div style={{ 
-        position: 'fixed',
-        top: Math.max(0, marginV),
-        left: Math.max(0, marginH),
-        width: GAME_WIDTH, 
-        height: GAME_HEIGHT,
-        transform: `scale(${scale})`, 
-        transformOrigin: 'top left'
-      }}>
-        <div className="layout-container">
-          <TopBar />
-          <LeftPanel />
-          <MergeBoard />
-          <RightPanel />
-          {offer && <RewardOfferPopup offer={offer} onClose={() => setOffer(null)} />}
-        </div>
+    <div style={{
+      width: '100vw', height: '100vh',
+      overflow: 'hidden', background: 'var(--bg-dark)'
+    }}>
+      <div 
+        className="layout-container"
+        style={{
+          width: `${100 / scale}%`,
+          height: `${100 / scale}%`,
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
+          maxWidth: 'none', // Remove the CSS max-width constraint while scaling
+          padding: 16
+        }}
+      >
+        <TopBar />
+        <LeftPanel />
+        <MergeBoard />
+        <RightPanel />
+        {offer && <RewardOfferPopup offer={offer} onClose={() => setOffer(null)} />}
       </div>
-    </>
+    </div>
   );
 }
 
