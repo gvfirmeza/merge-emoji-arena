@@ -77,14 +77,6 @@ function App() {
 
   return (
     <>
-      <div style={{ position: 'fixed', top: 10, left: 10, zIndex: 999999, background: 'rgba(0,0,0,0.8)', padding: '10px', borderRadius: '8px', color: '#0f0', fontFamily: 'monospace', fontSize: '12px', pointerEvents: 'none', border: '1px solid #0f0' }}>
-        Viewport: {debugDimensions.w}x{debugDimensions.h}<br/>
-        Virtual: {GAME_WIDTH}x{GAME_HEIGHT}<br/>
-        Scale: {scale.toFixed(4)}<br/>
-        Scaled Size: {Math.round(scaledWidth)}x{Math.round(scaledHeight)}<br/>
-        Margins: H:{Math.max(0, Math.round(marginH))}px V:{Math.max(0, Math.round(marginV))}px
-      </div>
-      
       <div style={{ 
         position: 'fixed',
         top: Math.max(0, marginV),
