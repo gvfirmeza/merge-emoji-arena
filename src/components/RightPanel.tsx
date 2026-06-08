@@ -46,9 +46,19 @@ export default function RightPanel() {
     return () => clearInterval(attackInterval);
   }, [store.lanes, store.enemies, store.dealDamageToEnemy, store.settings.sfxVolume]);
 
-  const handleDragEnd = (_e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo, sourceIndex: number) => {
+  const handleDragEnd = (_e: MouseEvent | TouchEvent | PointerEvent, _info: PanInfo, sourceIndex: number) => {
     setActiveDragIndex(null);
-    const elements = document.elementsFromPoint(info.point.x, info.point.y);
+    let clientX = 0;
+    let clientY = 0;
+    if ('changedTouches' in _e && _e.changedTouches.length > 0) {
+      clientX = _e.changedTouches[0].clientX;
+      clientY = _e.changedTouches[0].clientY;
+    } else {
+      clientX = (_e as MouseEvent).clientX;
+      clientY = (_e as MouseEvent).clientY;
+    }
+    
+    const elements = document.elementsFromPoint(clientX, clientY);
     
     const targetLaneEl = elements.find(el => el.hasAttribute('data-lane-index'));
     if (targetLaneEl) {

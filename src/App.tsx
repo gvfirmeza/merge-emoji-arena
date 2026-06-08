@@ -7,6 +7,7 @@ import RightPanel from './components/RightPanel';
 import RewardOfferPopup, { type RewardType } from './components/RewardOfferPopup';
 import PortraitOverlay from './components/PortraitOverlay';
 import { AudioSystem } from './utils/audio';
+import { MotionConfig } from 'framer-motion';
 
 function useGameScale() {
   const [scale, setScale] = useState(1);
@@ -56,7 +57,7 @@ function App() {
         const rewards: RewardType[] = ['2x_gold', 'instant_gold', 'shop_boost'];
         return rewards[Math.floor(Math.random() * rewards.length)];
       });
-    }, 30000);
+    }, 3000000);
 
     return () => {
       clearInterval(timer);
@@ -69,28 +70,30 @@ function App() {
   }
 
   return (
-    <div style={{
-      width: '100vw', height: '100vh',
-      overflow: 'hidden', background: 'var(--bg-dark)'
-    }}>
-      <div 
-        className="layout-container"
-        style={{
-          width: `${100 / scale}%`,
-          height: `${100 / scale}%`,
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left',
-          maxWidth: 'none', // Remove the CSS max-width constraint while scaling
-          padding: 16
-        }}
-      >
-        <TopBar />
-        <LeftPanel />
-        <MergeBoard />
-        <RightPanel />
-        {offer && <RewardOfferPopup offer={offer} onClose={() => setOffer(null)} />}
+    <MotionConfig transformPagePoint={(p) => ({ x: p.x / scale, y: p.y / scale })}>
+      <div style={{
+        width: '100vw', height: '100vh',
+        overflow: 'hidden', background: 'var(--bg-dark)'
+      }}>
+        <div 
+          className="layout-container"
+          style={{
+            width: `${100 / scale}%`,
+            height: `${100 / scale}%`,
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left',
+            maxWidth: 'none', 
+            padding: 16
+          }}
+        >
+          <TopBar />
+          <LeftPanel />
+          <MergeBoard />
+          <RightPanel />
+          {offer && <RewardOfferPopup offer={offer} onClose={() => setOffer(null)} />}
+        </div>
       </div>
-    </div>
+    </MotionConfig>
   );
 }
 
