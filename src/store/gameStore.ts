@@ -46,6 +46,27 @@ const updateBestiary = (bestiary: Record<string, import('../types').BestiaryEntr
   return newBestiary;
 };
 
+const saveToPlaygama = (state: any) => {
+  const bridge = (window as any).bridge;
+  if (bridge && bridge.storage) {
+    const dataToSave = {
+      stage: state.stage,
+      gold: state.gold,
+      highestUnlockedLevel: state.highestUnlockedLevel,
+      shopLevel: state.shopLevel,
+      board: state.board,
+      lanes: state.lanes,
+      enemies: state.enemies,
+      bestiary: state.bestiary,
+      boosts: state.boosts,
+      settings: state.settings,
+      stats: state.stats
+    };
+    bridge.storage.set('game_save', JSON.stringify(dataToSave))
+      .catch((e: any) => console.warn('Playgama Storage Save Error', e));
+  }
+};
+
 export interface GameStateActions {
   buyUnit: () => void;
   moveBoardUnit: (fromIndex: number, toIndex: number) => void;
@@ -104,6 +125,7 @@ export const useGameStore = create<GameState & GameStateActions>()(
           const newBoard = [...board];
           newBoard[emptyIndex] = { id: crypto.randomUUID(), level: effectiveShopLevel };
           set({ gold: gold - cost, board: newBoard });
+          saveToPlaygama(get());
         }
       },
 
@@ -130,6 +152,7 @@ export const useGameStore = create<GameState & GameStateActions>()(
             board: newBoard,
             highestUnlockedLevel: Math.max(highestUnlockedLevel, nextLevel)
           });
+          saveToPlaygama(get());
         }
       },
 
@@ -217,9 +240,7 @@ export const useGameStore = create<GameState & GameStateActions>()(
               newBestiary[enemy.emoji] = { ...newBestiary[enemy.emoji], defeatedCount: newBestiary[enemy.emoji].defeatedCount + 1 };
             }
             
-            // Check if all enemies in stage are dead
             const allDead = newEnemies.every(e => e === null);
-            
             if (allDead) {
               const nextStage = stage + 1;
               const autoShopLevel = getShopLevelForStage(nextStage);
@@ -250,6 +271,7 @@ export const useGameStore = create<GameState & GameStateActions>()(
                   highestStageReached: Math.max(stats.highestStageReached, nextStage)
                 }
               });
+              saveToPlaygama(get());
             } else {
               set({
                 enemies: newEnemies,
@@ -257,6 +279,7 @@ export const useGameStore = create<GameState & GameStateActions>()(
                 gold: gold + reward,
                 stats: { ...stats, totalEnemiesDefeated: newTotalDefeated }
               });
+              saveToPlaygama(get());
             }
           } else {
             newEnemies[laneIndex] = { ...enemy, hp: newHp };

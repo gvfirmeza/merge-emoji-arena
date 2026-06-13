@@ -65,6 +65,20 @@ function App() {
           bridge.platform.on('pause_state_changed', () => {
              // Game state pausing could be handled here if needed
           });
+
+          // Load Playgama storage
+          bridge.storage.get('game_save')
+            .then((data: any) => {
+              if (data && typeof data === 'string') {
+                try {
+                  const parsed = JSON.parse(data);
+                  useGameStore.setState(parsed);
+                } catch(e) {
+                  console.warn("Failed to parse Playgama save", e);
+                }
+              }
+            })
+            .catch((e: any) => console.warn("Playgama load error", e));
         })
         .catch((e: any) => console.error("Bridge init error", e));
     }
