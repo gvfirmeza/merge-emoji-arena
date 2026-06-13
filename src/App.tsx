@@ -6,6 +6,7 @@ import MergeBoard from './components/MergeBoard';
 import RightPanel from './components/RightPanel';
 import RewardOfferPopup, { type RewardType } from './components/RewardOfferPopup';
 import PortraitOverlay from './components/PortraitOverlay';
+import TutorialOverlay from './components/TutorialOverlay';
 import { AudioSystem } from './utils/audio';
 import { MotionConfig } from 'framer-motion';
 
@@ -61,9 +62,10 @@ function App() {
             AudioSystem.setMuted(!isEnabled);
           });
           
-          // Optional pause handler
-          bridge.platform.on('pause_state_changed', () => {
-             // Game state pausing could be handled here if needed
+          // Global pause handler (Required by Playgama QA for overlays and ads)
+          bridge.platform.on('pause_state_changed', (state: any) => {
+             const isPaused = state === true || state === 'paused';
+             useGameStore.getState().setPaused(isPaused);
           });
 
           // Load Playgama storage
@@ -90,7 +92,9 @@ function App() {
     window.addEventListener('click', initAudio);
 
     const timer = setInterval(() => {
-      incrementTimePlayed();
+      if (!useGameStore.getState().isPaused) {
+        incrementTimePlayed();
+      }
     }, 1000);
 
     // Reward Offer Interval
@@ -100,7 +104,7 @@ function App() {
         const rewards: RewardType[] = ['2x_gold', 'instant_gold', 'upgrade_all'];
         return rewards[Math.floor(Math.random() * rewards.length)];
       });
-    }, 60000);
+    }, 30000);
 
     return () => {
       clearInterval(timer);
@@ -134,6 +138,7 @@ function App() {
           <MergeBoard />
           <RightPanel />
           {offer && <RewardOfferPopup offer={offer} onClose={() => setOffer(null)} />}
+          <TutorialOverlay />
         </div>
       </div>
     </MotionConfig>

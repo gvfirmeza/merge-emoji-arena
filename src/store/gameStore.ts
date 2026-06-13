@@ -90,6 +90,7 @@ export interface GameStateActions {
   activateDoubleGold: () => void;
   upgradeAllUnits: () => void;
   claimInstantGold: () => void;
+  setPaused: (paused: boolean) => void;
 }
 
 export const useGameStore = create<GameState & GameStateActions>()(
@@ -114,6 +115,10 @@ export const useGameStore = create<GameState & GameStateActions>()(
         highestStageReached: 1,
         timePlayed: 0
       },
+      isPaused: false,
+      tutorialCompleted: false,
+
+      setPaused: (paused) => set({ isPaused: paused }),
 
       buyUnit: () => {
         const { gold, shopLevel, board } = get();
@@ -294,6 +299,7 @@ export const useGameStore = create<GameState & GameStateActions>()(
 
       resetSave: () => {
         set({
+          tutorialCompleted: false,
           stage: 1,
           gold: 50,
           highestUnlockedLevel: 1,
@@ -428,6 +434,7 @@ export const useGameStore = create<GameState & GameStateActions>()(
         }
         if (persistedState && !persistedState.bestiary) persistedState.bestiary = {};
         if (persistedState && !persistedState.boosts) persistedState.boosts = { doubleGoldUntil: null, shopBoostUntil: null };
+        if (persistedState) persistedState.isPaused = false;
         return { ...currentState, ...persistedState };
       }
     }

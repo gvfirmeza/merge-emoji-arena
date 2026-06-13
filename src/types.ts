@@ -45,6 +45,8 @@ export interface GameState {
   };
   bestiary: Record<string, BestiaryEntry>;
   boosts: Boosts;
+  isPaused: boolean;
+  tutorialCompleted: boolean;
   
   // Actions
   buyUnit: () => void;

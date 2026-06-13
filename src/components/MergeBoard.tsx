@@ -106,6 +106,7 @@ export default function MergeBoard() {
               <div 
                 key={index}
                 data-board-index={index}
+                className={unit ? 'board-slot-filled' : 'board-slot-empty'}
                 style={{
                   background: 'var(--bg-panel-light)',
                   borderRadius: 24,
@@ -166,7 +167,7 @@ export default function MergeBoard() {
         borderRadius: '0 0 calc(var(--radius-lg) - 4px) calc(var(--radius-lg) - 4px)'
       }}>
         <button 
-          className="btn-primary" 
+          className="btn-primary buy-unit-btn" 
           disabled={!canBuy}
           onClick={handleBuy}
           style={{

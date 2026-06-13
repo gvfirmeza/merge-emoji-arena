@@ -12,6 +12,7 @@ export default function RightPanel() {
 
   useEffect(() => {
     const attackInterval = setInterval(() => {
+      if (useGameStore.getState().isPaused) return;
       let playedHitSound = false;
 
       store.lanes.forEach((unit, index) => {
@@ -142,6 +143,7 @@ export default function RightPanel() {
               {/* Lane Slot */}
               <div
                 data-lane-index={index}
+                className={unit ? 'lane-slot-filled' : 'lane-slot-empty'}
                 style={{
                   width: 90,
                   height: 90,

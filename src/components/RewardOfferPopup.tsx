@@ -25,19 +25,26 @@ export default function RewardOfferPopup({ offer, onClose }: RewardOfferPopupPro
     };
 
     if (bridge && bridge.advertisement && bridge.advertisement.isRewardedSupported) {
-      bridge.advertisement.showRewarded({
-        onRewarded: () => {
+      const listener = (state: string) => {
+        if (state === 'rewarded') {
           rewarded = true;
           grantReward();
-        },
-        onClose: () => {
-          onClose();
-        },
-        onError: () => {
-          if (!rewarded) grantReward();
-          onClose();
         }
-      });
+        if (state === 'closed' || state === 'failed') {
+          if (state === 'failed' && !rewarded) grantReward();
+          onClose();
+          
+          // remove listener to avoid memory leak and duplicate calls
+          if (bridge.advertisement.off) {
+            bridge.advertisement.off('rewarded_state_changed', listener);
+          } else if (bridge.advertisement.removeListener) {
+            bridge.advertisement.removeListener('rewarded_state_changed', listener);
+          }
+        }
+      };
+
+      bridge.advertisement.on('rewarded_state_changed', listener);
+      bridge.advertisement.showRewarded();
     } else {
       grantReward();
       onClose();
