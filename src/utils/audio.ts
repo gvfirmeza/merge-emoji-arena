@@ -1,5 +1,17 @@
 export class AudioSystem {
   private static ctx: AudioContext | null = null;
+  public static muted = false;
+
+  static setMuted(muted: boolean) {
+    this.muted = muted;
+    if (this.ctx) {
+      if (muted && this.ctx.state === 'running') {
+        this.ctx.suspend();
+      } else if (!muted && this.ctx.state === 'suspended') {
+        this.ctx.resume();
+      }
+    }
+  }
 
   static init() {
     if (!this.ctx) {
@@ -13,6 +25,7 @@ export class AudioSystem {
   }
 
   static playSound(type: 'pop' | 'merge' | 'hit' | 'coin' | 'error', volumeScale = 1) {
+    if (this.muted) return;
     try {
       const ctx = this.getContext();
       if (ctx.state === 'suspended') ctx.resume();

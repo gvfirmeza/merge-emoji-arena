@@ -67,7 +67,7 @@ export interface GameStateActions {
   unlockAllLevels: () => void;
   
   activateDoubleGold: () => void;
-  activateShopBoost: () => void;
+  upgradeAllUnits: () => void;
   claimInstantGold: () => void;
 }
 
@@ -95,9 +95,8 @@ export const useGameStore = create<GameState & GameStateActions>()(
       },
 
       buyUnit: () => {
-        const { gold, shopLevel, board, boosts } = get();
-        const isShopBoostActive = boosts.shopBoostUntil && Date.now() < boosts.shopBoostUntil;
-        const effectiveShopLevel = isShopBoostActive ? Math.min(MAX_UNIT_LEVEL, shopLevel + 1) : shopLevel;
+        const { gold, shopLevel, board } = get();
+        const effectiveShopLevel = shopLevel;
         const cost = getShopCost(effectiveShopLevel);
         const emptyIndex = board.findIndex((u: any) => u === null);
         
@@ -368,15 +367,31 @@ export const useGameStore = create<GameState & GameStateActions>()(
         const { boosts } = get();
         set({ boosts: { ...boosts, doubleGoldUntil: Date.now() + 5 * 60 * 1000 } });
       },
-      activateShopBoost: () => {
-        const { boosts } = get();
-        set({ boosts: { ...boosts, shopBoostUntil: Date.now() + 5 * 60 * 1000 } });
+      upgradeAllUnits: () => {
+        const { board, lanes, highestUnlockedLevel } = get();
+        let maxNewLevel = highestUnlockedLevel;
+        
+        const newBoard = board.map((u: any) => {
+            if (u && u.level < MAX_UNIT_LEVEL) {
+                maxNewLevel = Math.max(maxNewLevel, u.level + 1);
+                return { ...u, level: u.level + 1 };
+            }
+            return u;
+        });
+
+        const newLanes = lanes.map((u: any) => {
+            if (u && u.level < MAX_UNIT_LEVEL) {
+                maxNewLevel = Math.max(maxNewLevel, u.level + 1);
+                return { ...u, level: u.level + 1 };
+            }
+            return u;
+        });
+        
+        set({ board: newBoard, lanes: newLanes, highestUnlockedLevel: maxNewLevel });
       },
       claimInstantGold: () => {
-        const { shopLevel, gold, boosts } = get();
-        const isShopBoostActive = boosts.shopBoostUntil && Date.now() < boosts.shopBoostUntil;
-        const effectiveShopLevel = isShopBoostActive ? Math.min(MAX_UNIT_LEVEL, shopLevel + 1) : shopLevel;
-        const currentCost = getShopCost(effectiveShopLevel);
+        const { shopLevel, gold } = get();
+        const currentCost = getShopCost(shopLevel);
         set({ gold: gold + (currentCost * 20) });
       }
     }),

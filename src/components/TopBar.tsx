@@ -3,14 +3,12 @@ import { useGameStore } from '../store/gameStore';
 import { formatNumber } from '../utils/constants';
 import { Settings, Coins, Book } from 'lucide-react';
 import SettingsModal from './SettingsModal';
-import DebugMenu from './DebugMenu';
 import BestiaryModal from './BestiaryModal';
 import { motion } from 'framer-motion';
 
 export default function TopBar() {
   const { stage, gold, boosts } = useGameStore();
   const [showSettings, setShowSettings] = useState(false);
-  const [showDebug, setShowDebug] = useState(false);
   const [showBestiary, setShowBestiary] = useState(false);
   const [now, setNow] = useState(Date.now());
 
@@ -28,7 +26,6 @@ export default function TopBar() {
   }, [gold]);
 
   const isDoubleGoldActive = boosts.doubleGoldUntil ? now < boosts.doubleGoldUntil : false;
-  const isShopBoostActive = boosts.shopBoostUntil ? now < boosts.shopBoostUntil : false;
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -112,8 +109,7 @@ export default function TopBar() {
       <div className="panel top-bar-panel" style={{ gridArea: 'top' }}>
         
         <div 
-          onDoubleClick={() => setShowDebug(p => !p)}
-          style={{ display: 'flex', flexDirection: 'column', gap: 8, cursor: 'pointer', userSelect: 'none' }}
+          style={{ display: 'flex', flexDirection: 'column', gap: 8, userSelect: 'none' }}
         >
           <div style={{
             background: 'var(--bg-dark)',
@@ -138,11 +134,6 @@ export default function TopBar() {
             {isDoubleGoldActive && (
               <div style={{ background: 'var(--gold)', color: 'white', padding: '2px 8px', borderRadius: 8, fontSize: '0.8rem', fontWeight: 'bold' }}>
                 2x Gold: {formatTime(Math.ceil((boosts.doubleGoldUntil! - now) / 1000))}
-              </div>
-            )}
-            {isShopBoostActive && (
-              <div style={{ background: '#a855f7', color: 'white', padding: '2px 8px', borderRadius: 8, fontSize: '0.8rem', fontWeight: 'bold' }}>
-                Boost: {formatTime(Math.ceil((boosts.shopBoostUntil! - now) / 1000))}
               </div>
             )}
           </div>
@@ -192,7 +183,6 @@ export default function TopBar() {
       </div>
       
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
-      {showDebug && <DebugMenu onClose={() => setShowDebug(false)} />}
       {showBestiary && <BestiaryModal onClose={() => setShowBestiary(false)} />}
     </>
   );

@@ -36,10 +36,39 @@ function useGameScale() {
 
 function App() {
   const incrementTimePlayed = useGameStore(state => state.incrementTimePlayed);
+  const stage = useGameStore(state => state.stage);
   const [offer, setOffer] = useState<RewardType | null>(null);
   const { scale, isPortrait } = useGameScale();
 
   useEffect(() => {
+    if (stage > 1 && stage % 5 === 0) {
+      const bridge = (window as any).bridge;
+      if (bridge && bridge.advertisement && bridge.advertisement.isInterstitialSupported) {
+         bridge.advertisement.showInterstitial();
+      }
+    }
+  }, [stage]);
+
+  useEffect(() => {
+    const bridge = (window as any).bridge;
+    if (bridge) {
+      bridge.initialize()
+        .then(() => {
+          console.log("Playgama Bridge initialized");
+          bridge.platform.sendMessage("game_ready");
+          
+          bridge.platform.on('audio_state_changed', (isEnabled: boolean) => {
+            AudioSystem.setMuted(!isEnabled);
+          });
+          
+          // Optional pause handler
+          bridge.platform.on('pause_state_changed', () => {
+             // Game state pausing could be handled here if needed
+          });
+        })
+        .catch((e: any) => console.error("Bridge init error", e));
+    }
+
     const initAudio = () => { 
       AudioSystem.init(); 
       window.removeEventListener('click', initAudio); 
@@ -54,10 +83,10 @@ function App() {
     const rewardTimer = setInterval(() => {
       setOffer(prev => {
         if (prev) return prev; // Don't override if one is already showing
-        const rewards: RewardType[] = ['2x_gold', 'instant_gold', 'shop_boost'];
+        const rewards: RewardType[] = ['2x_gold', 'instant_gold', 'upgrade_all'];
         return rewards[Math.floor(Math.random() * rewards.length)];
       });
-    }, 3000000);
+    }, 60000);
 
     return () => {
       clearInterval(timer);
